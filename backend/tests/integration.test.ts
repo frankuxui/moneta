@@ -61,6 +61,95 @@ describe.skipIf(!url)('PostgreSQL real y API', () => {
     await api.delete(`/api/v1/expenses/${created.body.id}`).expect(204);
     await api.get(`/api/v1/expenses/${created.body.id}`).expect(404);
   });
+  it.each(['expenses', 'income'])(
+    'busca todos los campos y combina columnas antes de paginar en %s',
+    async (kind) => {
+      const { body: category } = await api
+        .post('/api/v1/categories')
+        .send({ name: 'Formación' })
+        .expect(201);
+      for (let index = 0; index < 22; index++) {
+        await api
+          .post(`/api/v1/${kind}`)
+          .send({ ...expense, name: `Otro ${index}`, date: '2026-02-01' })
+          .expect(201);
+      }
+      const { body: target } = await api
+        .post(`/api/v1/${kind}`)
+        .send({
+          ...expense,
+          name: 'Curso de francés',
+          categoryId: category.id,
+          amountCents: '125075',
+          description: 'Material avanzado',
+          notes: 'Referencia 50%_especial',
+          paymentMethod: 'Tarjeta virtual',
+        })
+        .expect(201);
+      // It is beyond page one before filtering, and totals must use the entire result set.
+      expect(
+        (await api.get(`/api/v1/${kind}`)).body.items.some(
+          (item: { id: string }) => item.id === target.id,
+        ),
+      ).toBe(false);
+      for (const search of [
+        'FRANCES',
+        'formacion',
+        'avanzado',
+        '50%_especial',
+        'tarjeta virtual',
+        '1.250,75 €',
+        '1250.75',
+        '31/01/2026',
+        '31 ene 2026',
+        'enero',
+        'frances formacion virtual',
+      ]) {
+        const { body } = await api
+          .get(`/api/v1/${kind}`)
+          .query({ search, pageSize: 1 })
+          .expect(200);
+        expect(body.total, search).toBe(1);
+        expect(body.totalCents, search).toBe('125075');
+        expect(body.items[0].id, search).toBe(target.id);
+      }
+      const filters = {
+        nameSearch: 'frances',
+        categorySearch: 'formacion',
+        dateSearch: 'enero',
+        amountSearch: '1250,75',
+      };
+      expect((await api.get(`/api/v1/${kind}`).query(filters).expect(200)).body.total).toBe(1);
+      expect(
+        (
+          await api
+            .get(`/api/v1/${kind}`)
+            .query({ ...filters, search: 'efectivo' })
+            .expect(200)
+        ).body.total,
+      ).toBe(0);
+      expect(
+        (
+          await api
+            .get(`/api/v1/${kind}`)
+            .query({ ...filters, amountSearch: '23,65' })
+            .expect(200)
+        ).body.totalCents,
+      ).toBe('0');
+      expect(
+        (await api.get(`/api/v1/${kind}`).query({ search: '50%_inventado' }).expect(200)).body
+          .total,
+      ).toBe(0);
+      expect(
+        (await api.get(`/api/v1/${kind}`).query({ categorySearch: 'sin categoria' }).expect(200))
+          .body.total,
+      ).toBe(22);
+      await api
+        .get(`/api/v1/${kind}`)
+        .query({ nameSearch: 'a'.repeat(121) })
+        .expect(422);
+    },
+  );
   it('rechaza importes, fechas, rangos, claves y cuerpos inválidos', async () => {
     for (const amountCents of ['1.23', '-1', '0', '9999999999999'])
       await api

@@ -25,7 +25,15 @@ Fechas DATE ISO (sin hora); hoy se determina en Europe/Madrid. Rangos inclusivos
 
 ## API `/api/v1`
 
-CRUD `/expenses`, `/income`, `/subscriptions`, `/categories`, `/platforms`; PATCH como actualización parcial. GET de movimientos acepta `search`, `from`, `to`, `categoryId`, `sort` (date/amount), `direction`, `page`, `pageSize` (máximo 100). Devuelve `{items,total,totalCents,page,pageSize}`. `/dashboard?from&to` y `/analytics?from&to` devuelven cifras reales, comparación anterior, evolución y previsiones separadas. `/subscriptions/:id/confirm` recibe `{date}`. GET/PUT `/settings`. GET `/health`; contrato generado desde Zod en `/openapi.json`, explorador en `/docs`. Errores `{error,message,details?}`. Validación estricta, límites de cuerpo, consultas parametrizadas, same-origin y control de origen para mutaciones.
+CRUD `/expenses`, `/income`, `/subscriptions`, `/categories`, `/platforms`; PATCH como actualización parcial. GET de movimientos acepta `search`, `nameSearch`, `categorySearch`, `dateSearch`, `amountSearch`, `from`, `to`, `categoryId`, `sort` (date/amount), `direction`, `page`, `pageSize` (máximo 100). Devuelve `{items,total,totalCents,page,pageSize}`. `/dashboard?from&to` y `/analytics?from&to` devuelven cifras reales, comparación anterior, evolución y previsiones separadas. `/subscriptions/:id/confirm` recibe `{date}`. GET/PUT `/settings`. GET `/health`; contrato generado desde Zod en `/openapi.json`, explorador en `/docs`. Errores `{error,message,details?}`. Validación estricta, límites de cuerpo, consultas parametrizadas, same-origin y control de origen para mutaciones.
+
+## Tablas y búsquedas
+
+Los historiales de gastos/ingresos y la tabla de suscripciones usan TanStack Table v8, conservando sus celdas y diseño responsive con utilidades Tailwind 4. Cada columna de datos tiene un input y el listado tiene buscador global; acciones no tiene buscador. Los filtros se combinan mediante AND y los encabezados permanecen visibles incluso sin resultados. El dashboard ofrece un resumen de últimos movimientos con enlace al historial completo.
+
+El global de movimientos incluye nombre, concepto, categoría, fecha, importe, origen recurrente/puntual, descripción, método de pago y notas. En suscripciones incluye nombre, plataforma, concepto, categoría, fechas, estado, frecuencia, importes y equivalencias, cobros registrados, descripción, notas y URL. Se buscan valores de negocio legibles, sin depender de UUID técnicos. Todas las palabras deben aparecer, aunque pertenezcan a campos distintos; se ignoran mayúsculas y acentos. Importes con coma o punto decimal y agrupación española (`1.250,75`, `1250.75`) son equivalentes; fechas admiten ISO, barras y meses en español. `%`, `_` y barras invertidas son texto literal. Consultas de hasta 120 caracteres por input.
+
+Movimientos usa `manualFiltering` y estado controlado de TanStack: el servidor filtra todos los registros antes de paginar y calcula el total filtrado en la misma transacción. Cada cambio de filtro vuelve a página 1; TanStack Query conserva la página anterior mientras carga para mantener el foco de los inputs e indica que actualiza resultados. Suscripciones descarga el listado completo y usa `getFilteredRowModel`/`getSortedRowModel` en cliente, con los mismos criterios de búsqueda de shared. No se filtra una página aislada en cliente.
 
 ## Infraestructura
 
@@ -46,6 +54,8 @@ Cada fase debe compilar y pasar sus comprobaciones antes de continuar. Vitest pa
 - https://tailwindcss.com/docs/installation/using-vite
 - https://reactrouter.com/start/declarative/installation
 - https://ui.shadcn.com/docs/installation/vite
+- https://tanstack.com/table/v8/docs/guide/column-filtering
+- https://tanstack.com/table/v8/docs/guide/global-filtering
 - https://learn.chatgpt.com/docs/build-skills
 - https://learn.chatgpt.com/docs/agent-configuration/subagents
 - https://code.claude.com/docs/en/skills

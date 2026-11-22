@@ -1,22 +1,43 @@
-import { and, asc, desc, eq, gte, lte, ilike, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, lte, sql, getTableColumns } from 'drizzle-orm';
 import { z } from 'zod';
 import { listQuery, type MovementInput } from '@moneta/shared';
 import { db } from '../../db/index.js';
-import { movements } from '../../db/schema.js';
+import { movements, categories } from '../../db/schema.js';
+import { dateDocument, moneyDocument, searchCondition, searchDocument } from './search.js';
 import { required } from '../../lib/errors.js';
 export type Kind = 'expense' | 'income';
 export async function listMovements(kind: Kind, q: z.infer<typeof listQuery>) {
+  const origin = sql`case when ${movements.occurrenceDate} is not null then 'Cobro recurrente' else 'Puntual' end`;
+  const name = searchDocument(
+    movements.name,
+    sql`coalesce(nullif(${movements.concept}, ''), 'Sin concepto')`,
+    origin,
+  );
+  const category = sql`coalesce(${categories.name}, 'Sin categoría')`;
+  const date = dateDocument(movements.date);
+  const amount = moneyDocument(movements.amountCents, kind);
   const where = and(
     eq(movements.kind, kind),
     q.from ? gte(movements.date, q.from) : undefined,
     q.to ? lte(movements.date, q.to) : undefined,
     q.categoryId ? eq(movements.categoryId, q.categoryId) : undefined,
-    q.search
-      ? or(
-          ilike(movements.name, `%${q.search.replace(/[\\%_]/g, '\\$&')}%`),
-          ilike(movements.concept, `%${q.search.replace(/[\\%_]/g, '\\$&')}%`),
-        )
-      : undefined,
+    searchCondition(name, q.nameSearch),
+    searchCondition(category, q.categorySearch),
+    searchCondition(date, q.dateSearch),
+    searchCondition(amount, q.amountSearch),
+    searchCondition(
+      searchDocument(
+        name,
+        category,
+        date,
+        amount,
+        movements.description,
+        movements.paymentMethod,
+        movements.notes,
+        sql`${kind === 'expense' ? 'Gasto' : 'Ingreso'}::text`,
+      ),
+      q.search,
+    ),
   );
   const order = q.direction === 'asc' ? asc : desc;
   return db.transaction(
@@ -27,10 +48,12 @@ export async function listMovements(kind: Kind, q: z.infer<typeof listQuery>) {
           totalCents: sql<string>`coalesce(sum(${movements.amountCents}),0)::text`,
         })
         .from(movements)
+        .leftJoin(categories, eq(movements.categoryId, categories.id))
         .where(where);
       const items = await tx
-        .select()
+        .select(getTableColumns(movements))
         .from(movements)
+        .leftJoin(categories, eq(movements.categoryId, categories.id))
         .where(where)
         .orderBy(
           order(q.sort === 'amount' ? movements.amountCents : movements.date),

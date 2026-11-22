@@ -78,6 +78,10 @@ export const rangeQuery = z
 export const listQuery = z
   .object({
     search: z.string().max(120).default(''),
+    nameSearch: z.string().max(120).default(''),
+    categorySearch: z.string().max(120).default(''),
+    dateSearch: z.string().max(120).default(''),
+    amountSearch: z.string().max(120).default(''),
     from: dateSchema.optional(),
     to: dateSchema.optional(),
     categoryId: z.uuid().optional(),

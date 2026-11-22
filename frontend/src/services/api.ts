@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import type { Category, Platform, Settings } from '@moneta/shared';
 export async function api<T>(path: string, method = 'GET', body?: unknown): Promise<T> {
@@ -15,8 +15,12 @@ export async function api<T>(path: string, method = 'GET', body?: unknown): Prom
   }
   return response.status === 204 ? (undefined as T) : (response.json() as Promise<T>);
 }
-export function useApi<T>(path: string) {
-  return useQuery({ queryKey: ['api', path], queryFn: () => api<T>(path) });
+export function useApi<T>(path: string, options?: { keepPreviousData?: boolean }) {
+  return useQuery({
+    queryKey: ['api', path],
+    queryFn: () => api<T>(path),
+    placeholderData: options?.keepPreviousData ? keepPreviousData : undefined,
+  });
 }
 export function useSave<T = unknown>(path: string, method = 'POST', message = 'Cambios guardados') {
   const client = useQueryClient();

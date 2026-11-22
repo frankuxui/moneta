@@ -100,7 +100,7 @@ Los tests vacían exclusivamente una BD cuyo nombre termina en `_test`. La base 
 ## Uso y reglas financieras
 
 - Añade gastos e ingresos desde sus secciones. Acepta `23,65`, `23.65` y `1.250,75`. `1.250` se rechaza por ambigüedad: escribe `1250` o `1.250,00`.
-- El historial permite editar, eliminar, buscar, filtrar por fecha/categoría y ordenar por fecha/importe. El total incluye todos los resultados del filtro, no solo la página visible.
+- Los historiales y suscripciones usan TanStack Table con buscador global y un input por columna de datos. Puedes combinar búsquedas de nombre, categoría/proveedor, fechas e importes; el global también encuentra notas y otros campos del registro, sin distinguir acentos o mayúsculas. El historial permite editar, eliminar, filtrar por fecha/categoría y ordenar por fecha/importe. La búsqueda y el total incluyen todos los resultados, no solo la página visible.
 - Crea suscripciones con importe por cobro y frecuencia. Las equivalencias mensual/anual son presupuestarias; semanal usa 52 cobros/año. Los redondeos se hacen al céntimo, con enteros.
 - **Confirmar cobro** registra un gasto y avanza al próximo vencimiento en una única transacción. No se puede confirmar un cobro futuro o una suscripción pausada. Repetir la misma confirmación devuelve el gasto ya existente. Los cobros atrasados se confirman en orden, uno por uno.
 - Cambiar el próximo cobro manualmente redefine el día ancla. La renovación automática conserva el ancla: 31 enero → fin de febrero → 31 marzo. No se usan meses de 30 días. Frecuencia personalizada queda fuera para evitar reglas ambiguas.

@@ -7,9 +7,20 @@ import { MovementDialog } from '@/features/movements/movement-dialog';
 import { MovementTable } from '@/features/movements/movement-table';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import type { ColumnFiltersState, OnChangeFn } from '@tanstack/react-table';
+const columnQueries = {
+  name: 'nameSearch',
+  category: 'categorySearch',
+  date: 'dateSearch',
+  amount: 'amountSearch',
+} as const;
 export default function MovementsPage({ kind }: { kind: 'expenses' | 'income' }) {
   const [filters, setFilters] = useState({
     search: '',
+    nameSearch: '',
+    categorySearch: '',
+    dateSearch: '',
+    amountSearch: '',
     from: '',
     to: '',
     categoryId: '',
@@ -24,7 +35,24 @@ export default function MovementsPage({ kind }: { kind: 'expenses' | 'income' })
       .filter(([, v]) => v !== '')
       .map(([k, v]) => [k, String(v)]),
   );
-  const data = useApi<Page<Movement>>(`/${kind}?${params}`);
+  const data = useApi<Page<Movement>>(`/${kind}?${params}`, { keepPreviousData: true });
+  const columnFilters: ColumnFiltersState = Object.entries(columnQueries)
+    .filter(([, key]) => filters[key])
+    .map(([id, key]) => ({ id, value: filters[key] }));
+  const changeColumns: OnChangeFn<ColumnFiltersState> = (updater) => {
+    const next = typeof updater === 'function' ? updater(columnFilters) : updater;
+    change({
+      nameSearch: '',
+      categorySearch: '',
+      dateSearch: '',
+      amountSearch: '',
+      ...Object.fromEntries(
+        next
+          .filter((f) => f.id in columnQueries)
+          .map((f) => [columnQueries[f.id as keyof typeof columnQueries], String(f.value)]),
+      ),
+    });
+  };
   const categories = useCategories();
   const income = kind === 'income';
   return (
@@ -58,7 +86,8 @@ export default function MovementsPage({ kind }: { kind: 'expenses' | 'income' })
             <Search size={17} />
             <Input
               aria-label="Buscar movimientos"
-              placeholder="Buscar por nombre o concepto…"
+              placeholder="Buscar en todos los campos…"
+              maxLength={120}
               value={filters.search}
               onChange={(e) => change({ search: e.target.value })}
             />
@@ -125,6 +154,10 @@ export default function MovementsPage({ kind }: { kind: 'expenses' | 'income' })
                 onClick={() =>
                   setFilters({
                     search: '',
+                    nameSearch: '',
+                    categorySearch: '',
+                    dateSearch: '',
+                    amountSearch: '',
                     from: '',
                     to: '',
                     categoryId: '',
@@ -143,25 +176,41 @@ export default function MovementsPage({ kind }: { kind: 'expenses' | 'income' })
           <Loading />
         ) : data.isError ? (
           <ErrorState error={data.error} retry={() => void data.refetch()} />
-        ) : !data.data.items.length ? (
-          <EmptyState
-            title={
-              filters.search || filters.categoryId || filters.from || filters.to
-                ? 'No hay resultados con estos filtros'
-                : income
-                  ? 'Los ingresos son opcionales'
-                  : 'Tu historial empieza aquí'
-            }
-            description={
-              income
-                ? 'Cuando añadas un ingreso, Moneta podrá calcular tu balance real.'
-                : 'Registra un gasto o prueba a cambiar los filtros.'
-            }
-            action={<MovementDialog kind={kind} />}
-          />
         ) : (
           <>
-            <MovementTable items={data.data.items} categories={categories.data ?? []} kind={kind} />
+            <MovementTable
+              items={data.data.items}
+              categories={categories.data ?? []}
+              kind={kind}
+              columnFilters={columnFilters}
+              onColumnFiltersChange={changeColumns}
+              emptyState={
+                <EmptyState
+                  title={
+                    filters.search ||
+                    columnFilters.length ||
+                    filters.categoryId ||
+                    filters.from ||
+                    filters.to
+                      ? 'No hay resultados con estos filtros'
+                      : income
+                        ? 'Los ingresos son opcionales'
+                        : 'Tu historial empieza aquí'
+                  }
+                  description={
+                    income
+                      ? 'Cuando añadas un ingreso, Moneta podrá calcular tu balance real.'
+                      : 'Registra un gasto o prueba a cambiar los filtros.'
+                  }
+                  action={<MovementDialog kind={kind} />}
+                />
+              }
+            />
+            {data.isFetching && (
+              <p role="status" className="pt-2 text-xs/normal text-muted-foreground">
+                Actualizando resultados…
+              </p>
+            )}
             <div className="mt-2.5 flex items-center justify-between border-t border-border pt-5 text-caption text-muted-foreground [&>div]:flex [&>div]:gap-2">
               <span>
                 Página {filters.page} de {Math.max(1, Math.ceil(data.data.total / 20))}
@@ -170,7 +219,7 @@ export default function MovementsPage({ kind }: { kind: 'expenses' | 'income' })
                 <Button
                   variant="outline"
                   size="sm"
-                  disabled={filters.page === 1}
+                  disabled={filters.page === 1 || data.isPlaceholderData}
                   onClick={() => change({ page: filters.page - 1 })}
                 >
                   Anterior
@@ -178,7 +227,7 @@ export default function MovementsPage({ kind }: { kind: 'expenses' | 'income' })
                 <Button
                   variant="outline"
                   size="sm"
-                  disabled={filters.page * 20 >= data.data.total}
+                  disabled={filters.page * 20 >= data.data.total || data.isPlaceholderData}
                   onClick={() => change({ page: filters.page + 1 })}
                 >
                   Siguiente

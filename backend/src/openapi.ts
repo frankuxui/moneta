@@ -34,7 +34,16 @@ for (const [path, name, paginated] of [
       summary: `Listar ${path}`,
       parameters: paginated
         ? [
-            ...['search', 'from', 'to', 'categoryId'].map((name) => ({
+            ...[
+              'search',
+              'nameSearch',
+              'categorySearch',
+              'dateSearch',
+              'amountSearch',
+              'from',
+              'to',
+              'categoryId',
+            ].map((name) => ({
               name,
               in: 'query',
               schema: { type: 'string' },

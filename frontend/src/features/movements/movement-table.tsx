@@ -1,20 +1,34 @@
 import { useMemo } from 'react';
-import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from '@tanstack/react-table';
+import {
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+  type ColumnDef,
+  type ColumnFiltersState,
+  type OnChangeFn,
+} from '@tanstack/react-table';
 import type { Category, Movement } from '@moneta/shared';
 import { DateText, Money } from '@/components/common';
 import { Badge } from '@/components/ui/badge';
 import { MovementDialog } from './movement-dialog';
 import { ConfirmDelete } from '@/components/confirm-delete';
+import { ColumnSearch } from '@/components/column-search';
 export function MovementTable({
   items,
   categories,
   kind = 'expenses',
   compact = false,
+  columnFilters = [],
+  onColumnFiltersChange,
+  emptyState,
 }: {
   items: Movement[];
   categories: Category[];
   kind?: 'expenses' | 'income';
   compact?: boolean;
+  columnFilters?: ColumnFiltersState;
+  onColumnFiltersChange?: OnChangeFn<ColumnFiltersState>;
+  emptyState?: React.ReactNode;
 }) {
   const columns = useMemo<ColumnDef<Movement>[]>(
     () => [
@@ -40,7 +54,9 @@ export function MovementTable({
         ),
       },
       {
-        accessorKey: 'categoryId',
+        id: 'category',
+        accessorFn: (movement) =>
+          categories.find((c) => c.id === movement.categoryId)?.name ?? 'Sin categoría',
         header: 'Categoría',
         cell: ({ row }) => (
           <Badge variant="secondary">
@@ -54,6 +70,7 @@ export function MovementTable({
         cell: ({ row }) => <DateText value={row.original.date} />,
       },
       {
+        id: 'amount',
         accessorKey: 'amountCents',
         header: 'Importe',
         cell: ({ row }) => (
@@ -64,6 +81,8 @@ export function MovementTable({
         ? [
             {
               id: 'actions',
+              enableColumnFilter: false,
+              enableGlobalFilter: false,
               header: 'Acciones',
               cell: ({ row }: { row: { original: Movement } }) => (
                 <div className="flex justify-end">
@@ -85,7 +104,15 @@ export function MovementTable({
     ],
     [categories, kind, compact],
   );
-  const table = useReactTable({ data: items, columns, getCoreRowModel: getCoreRowModel() });
+  const table = useReactTable({
+    data: items,
+    columns,
+    getRowId: (row) => row.id,
+    getCoreRowModel: getCoreRowModel(),
+    manualFiltering: true,
+    state: { columnFilters },
+    onColumnFiltersChange,
+  });
   return (
     <div className="w-full overflow-x-auto">
       <table className="w-full border-collapse text-left text-xs/normal">
@@ -101,12 +128,20 @@ export function MovementTable({
                   key={h.id}
                 >
                   {flexRender(h.column.columnDef.header, h.getContext())}
+                  {!compact && (
+                    <ColumnSearch column={h.column} label={String(h.column.columnDef.header)} />
+                  )}
                 </th>
               ))}
             </tr>
           ))}
         </thead>
         <tbody>
+          {!items.length && (
+            <tr>
+              <td colSpan={columns.length}>{emptyState}</td>
+            </tr>
+          )}
           {table.getRowModel().rows.map((row) => (
             <tr className="last:[&_td]:border-b-0" key={row.original.id}>
               {row.getVisibleCells().map((cell) => (
