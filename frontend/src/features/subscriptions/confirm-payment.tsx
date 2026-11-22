@@ -43,7 +43,7 @@ export function ConfirmPayment({ subscription: s }: { subscription: Subscription
           </AlertDialogDescription>
         </AlertDialogHeader>
         {save.error && (
-          <p role="alert" className="form-error">
+          <p role="alert" className="text-xs/normal text-destructive">
             {save.error.message}
           </p>
         )}

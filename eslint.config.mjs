@@ -22,6 +22,34 @@ export default tseslint.config(
     },
   },
   {
+    files: ['frontend/src/**/*.tsx'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "JSXAttribute[name.name='style']",
+          message: 'Utiliza utilidades Tailwind; no añadas estilos inline propios.',
+        },
+        {
+          selector:
+            "JSXAttribute[name.name='className'] > JSXExpressionContainer > :matches(TemplateLiteral, BinaryExpression, ConditionalExpression, LogicalExpression)",
+          message: 'Compón clases completas con la función cn() de lib/utils.',
+        },
+      ],
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['*.module.css', '**/*.module.css', 'styled-components', '@emotion/*'],
+              message: 'Tailwind CSS 4 es el único sistema de estilos del frontend.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ['**/*.mjs'],
     languageOptions: { globals: { process: 'readonly', console: 'readonly', URL: 'readonly' } },
   },

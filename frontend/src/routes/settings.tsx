@@ -6,7 +6,14 @@ import { Plus, Pencil, Sun, Moon, ShieldCheck } from 'lucide-react';
 import { settingsInput, type Settings, type Category, type Platform } from '@moneta/shared';
 import { useCategories, usePlatforms, useSave, useSettings } from '@/services/api';
 import { useUi } from '@/stores/ui';
-import { EmptyState, ErrorState, Loading, Section } from '@/components/common';
+import {
+  PageHeader,
+  ColorSwatch,
+  EmptyState,
+  ErrorState,
+  Loading,
+  Section,
+} from '@/components/common';
 import { ConfirmDelete } from '@/components/confirm-delete';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -92,7 +99,9 @@ function CatalogDialog({
             <Field data-invalid={!!errors.name}>
               <FieldLabel htmlFor="catalog-name">Nombre</FieldLabel>
               <Input id="catalog-name" {...register('name')} aria-invalid={!!errors.name} />
-              {errors.name && <p className="form-error">{errors.name.message}</p>}
+              {errors.name && (
+                <p className="text-xs/normal text-destructive">{errors.name.message}</p>
+              )}
             </Field>
             {type === 'categories' && (
               <Field>
@@ -101,7 +110,7 @@ function CatalogDialog({
               </Field>
             )}
             {save.error && (
-              <p role="alert" className="form-error">
+              <p role="alert" className="text-xs/normal text-destructive">
                 {save.error.message}
               </p>
             )}
@@ -129,10 +138,13 @@ export function Catalogs({ onlyCategories = false }: { onlyCategories?: boolean 
         ) : categories.isError ? (
           <ErrorState error={categories.error} />
         ) : categories.data.length ? (
-          <div className="catalog-grid">
+          <div className="@container/catalog grid grid-cols-1 gap-3 lg:grid-cols-2">
             {categories.data.map((c) => (
-              <div key={c.id} className="catalog-item">
-                <span className="category-swatch" style={{ background: c.color }} />
+              <div
+                key={c.id}
+                className="flex items-center gap-2.25 rounded-sm border border-border px-3.25 py-2.5 [&>strong]:mr-auto [&>strong]:text-xs/normal [&>strong]:font-medium"
+              >
+                <ColorSwatch color={c.color} />
                 <strong>{c.name}</strong>
                 <CatalogDialog type="categories" item={c} />
                 <ConfirmDelete
@@ -158,9 +170,12 @@ export function Catalogs({ onlyCategories = false }: { onlyCategories?: boolean 
           ) : platforms.isError ? (
             <ErrorState error={platforms.error} />
           ) : platforms.data.length ? (
-            <div className="catalog-grid">
+            <div className="@container/catalog grid grid-cols-1 gap-3 lg:grid-cols-2">
               {platforms.data.map((p) => (
-                <div key={p.id} className="catalog-item">
+                <div
+                  key={p.id}
+                  className="flex items-center gap-2.25 rounded-sm border border-border px-3.25 py-2.5 [&>strong]:mr-auto [&>strong]:text-xs/normal [&>strong]:font-medium"
+                >
                   <strong>{p.name}</strong>
                   <CatalogDialog type="platforms" item={p} />
                   <ConfirmDelete name={p.name} path={`/platforms/${p.id}`} />
@@ -188,7 +203,7 @@ function SettingsForm({ settings }: { settings: Settings }) {
   } = useForm<Settings>({ resolver: zodResolver(settingsInput), defaultValues: settings });
   return (
     <form onSubmit={handleSubmit((v) => save.mutate(v))}>
-      <div className="settings-fixed">
+      <div className="mb-6.25 grid grid-cols-1 gap-5 border-b border-border pb-6.25 lg:grid-cols-[1fr_1.4fr_1fr] [&_span]:mb-2.25 [&_span]:block [&_span]:text-caption [&_span]:text-muted-foreground [&_strong]:text-body [&_strong]:font-medium">
         <div>
           <span>Moneda</span>
           <strong>Euro · EUR</strong>
@@ -203,14 +218,14 @@ function SettingsForm({ settings }: { settings: Settings }) {
         </div>
       </div>
       <FieldGroup>
-        <label className="checkbox-row">
+        <label className="flex cursor-pointer items-start gap-3 [&>input]:mt-0.5 [&>input]:size-4 [&>input]:accent-primary [&_strong]:text-body [&_strong]:font-medium [&_small]:mt-1.25 [&_small]:block [&_small]:text-caption [&_small]:leading-copy [&_small]:text-muted-foreground">
           <input type="checkbox" {...register('showIncome')} />
           <span>
             <strong>Mostrar ingresos en el resumen</strong>
             <small>Se muestran cuando hay ingresos registrados en el período.</small>
           </span>
         </label>
-        <label className="checkbox-row">
+        <label className="flex cursor-pointer items-start gap-3 [&>input]:mt-0.5 [&>input]:size-4 [&>input]:accent-primary [&_strong]:text-body [&_strong]:font-medium [&_small]:mt-1.25 [&_small]:block [&_small]:text-caption [&_small]:leading-copy [&_small]:text-muted-foreground">
           <input type="checkbox" {...register('showProjections')} />
           <span>
             <strong>Mostrar próximos pagos en el resumen</strong>
@@ -218,7 +233,7 @@ function SettingsForm({ settings }: { settings: Settings }) {
           </span>
         </label>
         {save.error && (
-          <p role="alert" className="form-error">
+          <p role="alert" className="text-xs/normal text-destructive">
             {save.error.message}
           </p>
         )}
@@ -236,18 +251,16 @@ export default function SettingsPage({ categoriesOnly = false }: { categoriesOnl
     theme = useUi((s) => s.theme),
     setTheme = useUi((s) => s.setTheme);
   return (
-    <div className="page-stack">
-      <div className="page-intro">
-        <div>
-          <p className="eyebrow">MONETA, A TU MANERA</p>
-          <h1>{categoriesOnly ? 'Tus categorías' : 'Configuración'}</h1>
-          <p>
-            {categoriesOnly
-              ? 'Dale sentido a cada movimiento.'
-              : 'Los pequeños ajustes que hacen tu espacio más cómodo.'}
-          </p>
-        </div>
-      </div>
+    <div className="flex flex-col gap-5 md:gap-6.25 2xl:gap-7.25">
+      <PageHeader
+        eyebrow="MONETA, A TU MANERA"
+        title={categoriesOnly ? 'Tus categorías' : 'Configuración'}
+        description={
+          categoriesOnly
+            ? 'Dale sentido a cada movimiento.'
+            : 'Los pequeños ajustes que hacen tu espacio más cómodo.'
+        }
+      />
       {!categoriesOnly && (
         <>
           <Section title="Preferencias" description="Configuración financiera y del resumen.">
@@ -260,7 +273,7 @@ export default function SettingsPage({ categoriesOnly = false }: { categoriesOnl
             )}
           </Section>
           <Section title="Apariencia" description="La preferencia se guarda en este dispositivo.">
-            <div className="theme-options">
+            <div className="flex gap-3">
               <Button
                 variant={theme === 'light' ? 'default' : 'outline'}
                 aria-pressed={theme === 'light'}
@@ -283,7 +296,7 @@ export default function SettingsPage({ categoriesOnly = false }: { categoriesOnl
       )}
       <Catalogs onlyCategories={categoriesOnly} />
       {!categoriesOnly && (
-        <div className="privacy-note">
+        <div className="flex items-start gap-3.5 rounded-lg border border-border bg-accent p-5.5 text-accent-foreground [&_strong]:text-body [&_strong]:font-semibold [&_p]:mt-1.75 [&_p]:text-xs/normal [&_p]:leading-copy">
           <ShieldCheck />
           <div>
             <strong>Tu espacio financiero privado</strong>

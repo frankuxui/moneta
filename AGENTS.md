@@ -12,9 +12,15 @@ Node 24 LTS; pnpm fijado en package.json. TypeScript strict, sin `any`, nombres 
 
 Comandos: `pnpm install`, `pnpm build`, `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm format:check`. Integración requiere TEST_DATABASE_URL aislada; `pnpm --filter @moneta/backend test:integration`. `pnpm dev` usa 5180/3080. `pnpm db:generate`, `pnpm db:migrate`; `pnpm docker:up` para Compose. Nunca puerto 5173.
 
+## Commit y push después de verificar
+
+Después de cada cambio coherente, comprueba que funciona y ejecuta las verificaciones pertinentes. Cuando pasen, revisa el diff, prepara únicamente los archivos del cambio, ejecuta `pnpm publication:check`, crea un commit con un mensaje descriptivo y haz push a la rama remota correspondiente. Esta es la rutina de entrega para todos los agentes, también para cambios de documentación. No dejes cambios verificados sin commit y push salvo instrucción expresa del usuario. No publiques cambios que sepas que fallan, archivos privados ni trabajo ajeno sin revisar; no uses force push ni reescribas el historial. Si una comprobación o el push está bloqueado, conserva el trabajo e informa del motivo concreto. Comprueba el resultado de la CI cuando se ejecute y corrige los fallos relacionados antes de dar la entrega por terminada.
+
 ## Frontend
 
 React Router exclusivamente declarativo. TanStack Query para datos remotos; invalidar después de mutaciones, no copiar a Zustand. Zustand únicamente preferencias e interacción. React Hook Form + Zod en formularios. Componentes shadcn/ui locales, Tailwind 4 con tokens semánticos. Estados de carga, error y vacío explícitos. Diálogos con título, foco y teclado; confirmaciones destructivas. Español; tema claro/oscuro; responsive. No introducir datos ficticios permanentes.
+
+Tailwind CSS 4 es el único sistema de estilos: utilidades nativas en JSX y configuración/tokens en `frontend/src/styles/globals.css`. No añadir selectores de componentes, CSS Modules, `@apply`, librerías de estilos ni estilos inline propios. Usar `cn()` para composición condicional y nombres de clases completos detectables estáticamente. Priorizar escalas nativas; conservar tokens y breakpoints existentes para evitar rediseños. Container queries en componentes que dependan de su espacio disponible. Los colores personalizados se representan como atributos SVG, no como estilos inline. Al añadir tamaños o pesos al tema, mantener su clasificación en la única función cn existente. Ver `docs/tailwind.md`.
 
 ## Finanzas
 

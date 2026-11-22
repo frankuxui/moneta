@@ -22,8 +22,11 @@ export function MovementTable({
         accessorKey: 'name',
         header: 'Movimiento',
         cell: ({ row }) => (
-          <div className="movement-name">
-            <span className="movement-initial" aria-hidden="true">
+          <div className="flex items-center gap-2.75 [&_strong]:block [&_strong]:max-w-55 [&_strong]:truncate [&_strong]:text-xs/normal [&_strong]:font-book [&_small]:mt-1 [&_small]:block [&_small]:max-w-55 [&_small]:truncate [&_small]:text-2xs [&_small]:text-muted-foreground">
+            <span
+              className="grid size-8.5 shrink-0 place-items-center rounded-sm border border-border bg-muted font-semibold text-muted-foreground"
+              aria-hidden="true"
+            >
               {row.original.name.slice(0, 1).toUpperCase()}
             </span>
             <div>
@@ -63,7 +66,7 @@ export function MovementTable({
               id: 'actions',
               header: 'Acciones',
               cell: ({ row }: { row: { original: Movement } }) => (
-                <div className="row-actions">
+                <div className="flex justify-end">
                   <MovementDialog kind={kind} movement={row.original} />
                   <ConfirmDelete
                     name={row.original.name}
@@ -84,8 +87,8 @@ export function MovementTable({
   );
   const table = useReactTable({ data: items, columns, getCoreRowModel: getCoreRowModel() });
   return (
-    <div className="table-scroll">
-      <table>
+    <div className="w-full overflow-x-auto">
+      <table className="w-full border-collapse text-left text-xs/normal">
         <caption className="sr-only">
           {kind === 'income' ? 'Ingresos registrados' : 'Gastos registrados'}
         </caption>
@@ -93,16 +96,26 @@ export function MovementTable({
           {table.getHeaderGroups().map((group) => (
             <tr key={group.id}>
               {group.headers.map((h) => (
-                <th key={h.id}>{flexRender(h.column.columnDef.header, h.getContext())}</th>
+                <th
+                  className="border-y border-border bg-background px-2.5 py-3 text-2xs font-medium whitespace-nowrap text-muted-foreground first:pl-0 last:text-right"
+                  key={h.id}
+                >
+                  {flexRender(h.column.columnDef.header, h.getContext())}
+                </th>
               ))}
             </tr>
           ))}
         </thead>
         <tbody>
           {table.getRowModel().rows.map((row) => (
-            <tr key={row.original.id}>
+            <tr className="last:[&_td]:border-b-0" key={row.original.id}>
               {row.getVisibleCells().map((cell) => (
-                <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                <td
+                  className="border-b border-border px-2.5 py-4 whitespace-nowrap first:pl-0 last:text-right [&_[data-slot=badge]]:text-micro [&_[data-slot=badge]]:font-normal"
+                  key={cell.id}
+                >
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </td>
               ))}
             </tr>
           ))}

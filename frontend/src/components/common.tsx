@@ -1,16 +1,7 @@
+import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { AlertCircle, ArrowRight, Inbox, Info } from 'lucide-react';
-import {
-  autoUpdate,
-  offset,
-  shift,
-  useDismiss,
-  useFloating,
-  useFocus,
-  useHover,
-  useInteractions,
-  useRole,
-} from '@floating-ui/react';
+import { Tooltip as TooltipPrimitive } from 'radix-ui';
 import { periodRange, formatMoney, todayMadrid } from '@moneta/shared';
 import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
@@ -91,8 +82,8 @@ export function Section({
   className?: string;
 }) {
   return (
-    <Card className={className}>
-      <CardHeader className="panel-heading">
+    <Card className={cn(className)}>
+      <CardHeader className="flex flex-wrap items-start justify-between gap-4 xl:flex-nowrap">
         <div>
           <CardTitle>{title}</CardTitle>
           {description && <CardDescription>{description}</CardDescription>}
@@ -105,7 +96,10 @@ export function Section({
 }
 export function TextLink({ to, children }: { to: string; children: React.ReactNode }) {
   return (
-    <Link className="text-link" to={to}>
+    <Link
+      className="inline-flex items-center gap-1.25 text-caption font-book whitespace-nowrap text-primary hover:underline"
+      to={to}
+    >
       {children}
       <ArrowRight size={14} />
     </Link>
@@ -122,43 +116,43 @@ export function DateText({ value }: { value: string }) {
 }
 export function Money({ value, sign }: { value: string; sign?: '+' | '−' }) {
   return (
-    <span className="money">
+    <span data-money className="whitespace-nowrap tracking-tight tabular-nums">
       {sign}
       {formatMoney(value)}
     </span>
   );
 }
-export function Hint({ text }: { text: string }) {
-  const [open, setOpen] = useState(false);
-  const { refs, floatingStyles, context } = useFloating({
-    open,
-    onOpenChange: setOpen,
-    whileElementsMounted: autoUpdate,
-    middleware: [offset(8), shift({ padding: 12 })],
-  });
-  const { getReferenceProps, getFloatingProps } = useInteractions([
-    useHover(context),
-    useFocus(context),
-    useDismiss(context),
-    useRole(context, { role: 'tooltip' }),
-  ]);
+export function ColorSwatch({ color, className }: { color: string; className?: string }) {
   return (
-    <>
-      <button
-        type="button"
-        aria-label="Más información"
-        ref={refs.setReference}
-        {...getReferenceProps()}
-        className="hint-trigger"
-      >
-        <Info size={14} />
-      </button>
-      {open && (
-        <div ref={refs.setFloating} style={floatingStyles} {...getFloatingProps()} className="hint">
-          {text}
-        </div>
-      )}
-    </>
+    <svg aria-hidden="true" viewBox="0 0 10 10" className={cn('size-2.5 shrink-0', className)}>
+      <rect width="10" height="10" rx="4" fill={color} />
+    </svg>
+  );
+}
+export function Hint({ text }: { text: string }) {
+  return (
+    <TooltipPrimitive.Provider delayDuration={0}>
+      <TooltipPrimitive.Root>
+        <TooltipPrimitive.Trigger asChild>
+          <button
+            type="button"
+            aria-label="Más información"
+            className="inline-flex items-center justify-center border-0 bg-transparent p-0.5 text-inherit opacity-80"
+          >
+            <Info size={14} />
+          </button>
+        </TooltipPrimitive.Trigger>
+        <TooltipPrimitive.Portal>
+          <TooltipPrimitive.Content
+            sideOffset={8}
+            collisionPadding={12}
+            className="z-60 max-w-65 rounded-sm border border-border bg-popover p-3 text-xs/normal font-normal tracking-normal text-popover-foreground shadow-floating"
+          >
+            {text}
+          </TooltipPrimitive.Content>
+        </TooltipPrimitive.Portal>
+      </TooltipPrimitive.Root>
+    </TooltipPrimitive.Provider>
   );
 }
 export function useRange() {
@@ -170,11 +164,12 @@ export function useRange() {
     range,
     valid,
     picker: (
-      <div className="period-picker">
+      <div className="flex flex-wrap items-center justify-start gap-2 md:justify-end [&>select]:min-w-31.25 [&>select]:text-xs/normal lg:[&>select]:min-w-36.5 [&>input]:w-35.5">
         <label className="sr-only" htmlFor="period">
           Período
         </label>
         <select
+          className="min-h-9.5 max-w-full cursor-pointer rounded-sm border border-input bg-card py-2 pr-8 pl-3 text-inherit"
           id="period"
           value={period}
           onChange={(e) => setPeriod(e.target.value as typeof period)}
@@ -209,4 +204,32 @@ export function useRange() {
       ? `from=${range.from}&to=${range.to}`
       : `from=${todayMadrid()}&to=${todayMadrid()}`,
   };
+}
+
+export function PageHeader({
+  eyebrow,
+  title,
+  description,
+  children,
+}: {
+  eyebrow: React.ReactNode;
+  title: React.ReactNode;
+  description: React.ReactNode;
+  children?: React.ReactNode;
+}) {
+  return (
+    <header className="mb-0.75 flex flex-wrap items-start justify-between gap-4.25 md:flex-nowrap md:gap-5 lg:items-center [&_h1]:mt-2.25 [&_h1]:font-heading [&_h1]:text-title [&_h1]:leading-title [&_h1]:font-book [&_h1]:tracking-page md:[&_h1]:text-page-tablet lg:[&_h1]:text-page [&_p:not([data-eyebrow])]:mt-2.25 [&_p:not([data-eyebrow])]:text-xs/normal [&_p:not([data-eyebrow])]:leading-copy [&_p:not([data-eyebrow])]:text-muted-foreground md:[&_p:not([data-eyebrow])]:text-body">
+      <div>
+        <p
+          data-eyebrow
+          className="text-overline font-demi tracking-overline text-muted-foreground md:text-micro"
+        >
+          {eyebrow}
+        </p>
+        <h1>{title}</h1>
+        <p>{description}</p>
+      </div>
+      {children}
+    </header>
+  );
 }

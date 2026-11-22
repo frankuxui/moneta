@@ -58,7 +58,7 @@ export function SubscriptionDialog({ subscription }: { subscription?: Subscripti
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="form-dialog">
+      <DialogContent className="max-h-[90dvh] overflow-y-auto scrollbar-gutter-stable">
         <DialogHeader>
           <DialogTitle>{subscription ? 'Editar suscripción' : 'Nueva suscripción'}</DialogTitle>
           <DialogDescription>
@@ -118,7 +118,7 @@ function SubscriptionForm({
           aria-describedby={errors[key] ? `sub-error-${key}` : undefined}
         />
         {errors[key] && (
-          <p id={`sub-error-${key}`} className="form-error">
+          <p id={`sub-error-${key}`} className="text-xs/normal text-destructive">
             {errors[key]?.message}
           </p>
         )}
@@ -140,13 +140,17 @@ function SubscriptionForm({
         ),
       )}
     >
-      <FieldGroup>
+      <FieldGroup className="@container/form">
         {field('name', 'Nombre')}
-        <div className="form-columns">
+        <div className="grid grid-cols-1 gap-3 @3xs/form:grid-cols-2 md:gap-4">
           {field('amount', 'Importe por cobro (€)')}
           <Field>
             <FieldLabel htmlFor="sub-frequency">Frecuencia</FieldLabel>
-            <select id="sub-frequency" {...register('frequency')}>
+            <select
+              className="min-h-9.5 max-w-full cursor-pointer rounded-sm border border-input bg-card py-2 pr-8 pl-3 text-inherit"
+              id="sub-frequency"
+              {...register('frequency')}
+            >
               <option value="weekly">Semanal</option>
               <option value="monthly">Mensual</option>
               <option value="quarterly">Trimestral</option>
@@ -155,14 +159,18 @@ function SubscriptionForm({
             </select>
           </Field>
         </div>
-        <div className="form-columns">
+        <div className="grid grid-cols-1 gap-3 @3xs/form:grid-cols-2 md:gap-4">
           {field('startDate', 'Fecha de inicio', 'date')}
           {field('nextPaymentDate', 'Próximo cobro', 'date')}
         </div>
-        <div className="form-columns">
+        <div className="grid grid-cols-1 gap-3 @3xs/form:grid-cols-2 md:gap-4">
           <Field>
             <FieldLabel htmlFor="sub-category">Categoría</FieldLabel>
-            <select id="sub-category" {...register('categoryId')}>
+            <select
+              className="min-h-9.5 max-w-full cursor-pointer rounded-sm border border-input bg-card py-2 pr-8 pl-3 text-inherit"
+              id="sub-category"
+              {...register('categoryId')}
+            >
               <option value="">Sin categoría</option>
               {categories.data?.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -173,7 +181,11 @@ function SubscriptionForm({
           </Field>
           <Field>
             <FieldLabel htmlFor="sub-platform">Plataforma</FieldLabel>
-            <select id="sub-platform" {...register('platformId')}>
+            <select
+              className="min-h-9.5 max-w-full cursor-pointer rounded-sm border border-input bg-card py-2 pr-8 pl-3 text-inherit"
+              id="sub-platform"
+              {...register('platformId')}
+            >
               <option value="">Sin plataforma</option>
               {platforms.data?.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -184,21 +196,27 @@ function SubscriptionForm({
           </Field>
         </div>
         {(categories.isError || platforms.isError) && (
-          <p role="alert" className="form-error">
+          <p role="alert" className="text-xs/normal text-destructive">
             No se pudo cargar algún catálogo. Reabre el formulario para volver a intentarlo.
           </p>
         )}
         {field('concept', 'Concepto')}
         <Field>
           <FieldLabel htmlFor="sub-status">Estado</FieldLabel>
-          <select id="sub-status" {...register('status')}>
+          <select
+            className="min-h-9.5 max-w-full cursor-pointer rounded-sm border border-input bg-card py-2 pr-8 pl-3 text-inherit"
+            id="sub-status"
+            {...register('status')}
+          >
             <option value="active">Activa</option>
             <option value="paused">Pausada</option>
             <option value="cancelled">Cancelada</option>
           </select>
         </Field>
         <details>
-          <summary>Descripción, enlace y notas</summary>
+          <summary className="cursor-pointer text-xs/normal text-muted-foreground">
+            Descripción, enlace y notas
+          </summary>
           <FieldGroup className="pt-4">
             {field('description', 'Descripción')}
             {field('url', 'URL de la plataforma', 'url')}
@@ -206,11 +224,11 @@ function SubscriptionForm({
           </FieldGroup>
         </details>
         {save.error && (
-          <p role="alert" className="form-error">
+          <p role="alert" className="text-xs/normal text-destructive">
             {save.error.message}
           </p>
         )}
-        <div className="form-actions">
+        <div className="flex flex-wrap justify-end gap-2.5 border-t border-border pt-4.5 md:flex-nowrap">
           <Button type="button" variant="outline" disabled={save.isPending} onClick={onSaved}>
             Cancelar
           </Button>

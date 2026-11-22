@@ -61,7 +61,7 @@ export function MovementDialog({
             </Button>
           ))}
       </DialogTrigger>
-      <DialogContent className="form-dialog">
+      <DialogContent className="max-h-[90dvh] overflow-y-auto scrollbar-gutter-stable">
         <DialogHeader>
           <DialogTitle>
             {movement ? 'Editar' : 'Nuevo'} {kind === 'income' ? 'ingreso' : 'gasto'}
@@ -118,7 +118,7 @@ export function MovementForm({
         aria-describedby={errors[key] ? `error-${key}` : undefined}
       />
       {errors[key] && (
-        <p id={`error-${key}`} className="form-error">
+        <p id={`error-${key}`} className="text-xs/normal text-destructive">
           {errors[key]?.message}
         </p>
       )}
@@ -134,18 +134,19 @@ export function MovementForm({
         ),
       )}
     >
-      <FieldGroup>
+      <FieldGroup className="@container/form">
         {field('name', 'Nombre', {
           placeholder: kind === 'income' ? 'Por ejemplo, nómina' : 'Por ejemplo, compra semanal',
           autoFocus: true,
         })}
-        <div className="form-columns">
+        <div className="grid grid-cols-1 gap-3 @3xs/form:grid-cols-2 md:gap-4">
           {field('amount', 'Importe (€)', { inputMode: 'decimal', placeholder: '0,00' })}
           {field('date', 'Fecha', { type: 'date' })}
         </div>
         <Field>
           <FieldLabel htmlFor="movement-category">Categoría</FieldLabel>
           <select
+            className="min-h-9.5 max-w-full cursor-pointer rounded-sm border border-input bg-card py-2 pr-8 pl-3 text-inherit"
             id="movement-category"
             {...register('categoryId')}
             disabled={categories.isPending || categories.isError}
@@ -158,7 +159,7 @@ export function MovementForm({
             ))}
           </select>
           {categories.isError && (
-            <p role="alert" className="form-error">
+            <p role="alert" className="text-xs/normal text-destructive">
               No se pudieron cargar las categorías. Puedes guardar sin categoría o volver a abrir el
               formulario.
             </p>
@@ -166,7 +167,9 @@ export function MovementForm({
         </Field>
         {field('concept', 'Concepto', { placeholder: '¿A qué corresponde este movimiento?' })}
         <details>
-          <summary>Descripción y detalles opcionales</summary>
+          <summary className="cursor-pointer text-xs/normal text-muted-foreground">
+            Descripción y detalles opcionales
+          </summary>
           <FieldGroup className="pt-4">
             {field('paymentMethod', 'Método de pago', {
               placeholder: 'Tarjeta, efectivo, transferencia…',
@@ -179,11 +182,11 @@ export function MovementForm({
           </FieldGroup>
         </details>
         {save.error && (
-          <p role="alert" className="form-error">
+          <p role="alert" className="text-xs/normal text-destructive">
             {save.error.message}
           </p>
         )}
-        <div className="form-actions">
+        <div className="flex flex-wrap justify-end gap-2.5 border-t border-border pt-4.5 md:flex-nowrap">
           <Button type="button" variant="outline" onClick={onSaved} disabled={save.isPending}>
             Cancelar
           </Button>

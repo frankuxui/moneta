@@ -23,7 +23,7 @@ createRoot(document.getElementById('root')!).render(
       <BrowserRouter>
         <Suspense
           fallback={
-            <div className="app-loading">
+            <div className="mx-auto mt-[15vh] max-w-225 p-6.25">
               <Loading />
             </div>
           }

@@ -39,7 +39,7 @@ export function ConfirmDelete({
           </AlertDialogDescription>
         </AlertDialogHeader>
         {remove.error && (
-          <p role="alert" className="form-error">
+          <p role="alert" className="text-xs/normal text-destructive">
             {remove.error.message}
           </p>
         )}

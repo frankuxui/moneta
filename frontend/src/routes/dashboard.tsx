@@ -10,6 +10,7 @@ import { Link } from 'react-router';
 import { type Overview } from '@moneta/shared';
 import { useApi, useCategories, useSettings } from '@/services/api';
 import {
+  PageHeader,
   DateText,
   EmptyState,
   ErrorState,
@@ -32,17 +33,18 @@ export default function DashboardPage() {
     settings = useSettings();
   const data = result.data;
   return (
-    <div className="page-stack">
-      <div className="page-intro">
-        <div>
-          <p className="eyebrow">UNA VISIÓN CLARA DE TU DINERO</p>
-          <h1>
-            Tu resumen financiero<span className="title-dot">.</span>
-          </h1>
-          <p>Menos suposiciones. Más claridad para tu día a día.</p>
-        </div>
+    <div className="flex flex-col gap-5 md:gap-6.25 2xl:gap-7.25">
+      <PageHeader
+        eyebrow="UNA VISIÓN CLARA DE TU DINERO"
+        title={
+          <>
+            Tu resumen financiero<span className="text-primary">.</span>
+          </>
+        }
+        description="Menos suposiciones. Más claridad para tu día a día."
+      >
         {picker}
-      </div>
+      </PageHeader>
       {!valid ? (
         <p role="alert">Selecciona un rango de fechas válido.</p>
       ) : result.isPending ? (
@@ -52,18 +54,27 @@ export default function DashboardPage() {
       ) : (
         data && (
           <>
-            <div className="dashboard-overview">
-              <section className="spending-highlight">
-                <div className="highlight-heading">
-                  <span className="eyebrow">GASTO REAL DEL PERÍODO</span>
-                  <span className="highlight-icon">
+            <div className="grid grid-cols-1 gap-4 md:gap-5.5 lg:grid-cols-[1fr_1.2fr] xl:grid-cols-[1fr_1.45fr]">
+              <section className="relative overflow-hidden rounded-lg bg-highlight p-6.25 text-highlight-foreground lg:px-6.75 2xl:p-7.5">
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute top-15 -right-20 size-50 rounded-full border border-white/5 before:absolute before:-inset-7 before:rounded-full before:border-28 before:border-white/1 after:absolute after:-inset-14 after:rounded-full after:border-28 after:border-white/1"
+                />
+                <div className="flex items-center justify-between [&>[data-eyebrow]]:text-micro [&>[data-eyebrow]]:tracking-overline [&>[data-eyebrow]]:text-highlight-muted">
+                  <span
+                    data-eyebrow
+                    className="text-overline font-demi tracking-overline text-muted-foreground md:text-micro"
+                  >
+                    GASTO REAL DEL PERÍODO
+                  </span>
+                  <span className="grid size-8 place-items-center rounded-sm border border-white/7 bg-white/5">
                     <ArrowUpRight size={20} />
                   </span>
                 </div>
-                <div className="highlight-amount">
+                <div className="mt-3.25 font-heading text-amount-mobile leading-amount font-medium tracking-tighter wrap-anywhere md:text-amount xl:text-amount 2xl:text-5xl">
                   <Money value={data.expensesCents} />
                 </div>
-                <div className="highlight-foot">
+                <div className="relative z-1 mt-3 flex items-center gap-1.75 [&_[data-slot=badge]]:border-white/15 [&_[data-slot=badge]]:px-2 [&_[data-slot=badge]]:py-1 [&_[data-slot=badge]]:text-2xs [&_[data-slot=badge]]:font-normal [&_[data-slot=badge]]:whitespace-normal [&_[data-slot=badge]]:text-highlight-muted">
                   <Badge variant="outline">
                     {data.variationPercent === null
                       ? 'Sin base de comparación'
@@ -71,14 +82,14 @@ export default function DashboardPage() {
                   </Badge>
                   <Hint text="Se compara con los mismos días inmediatamente anteriores. Las previsiones de suscripciones no se incluyen." />
                 </div>
-                <div className="highlight-rule" />
-                <div className="highlight-range">
+                <div className="mt-4.5 mb-3.75 h-px bg-white/10 lg:mt-5.75" />
+                <div className="flex gap-2.25 text-caption text-highlight-muted">
                   <DateText value={data.from} />
                   <span>—</span>
                   <DateText value={data.to} />
                 </div>
               </section>
-              <div className="metric-grid">
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-2 lg:gap-4.25">
                 <Metric
                   icon={<CalendarDays />}
                   label="Esta semana"
@@ -115,14 +126,14 @@ export default function DashboardPage() {
                 />
               </div>
             </div>
-            <div className="dashboard-charts">
+            <div className="grid grid-cols-1 items-stretch gap-5.5 lg:grid-cols-[1.35fr_1fr] xl:grid-cols-[1.6fr_1fr]">
               <Section
                 title="Cómo evoluciona tu gasto"
                 description="Movimientos reales del período"
                 action={<TextLink to="/analytics">Ver analíticas</TextLink>}
               >
                 <SpendingChart data={data} />
-                <div className="chart-footer">
+                <div className="mt-3 flex justify-between gap-3.75 border-t border-border pt-4 text-micro text-muted-foreground md:text-2xs [&_span]:flex [&_span]:items-center [&_span]:gap-1.75 [&_i]:inline-block [&_i]:size-1.75 [&_i]:rounded-full [&_i]:bg-chart-1 [&_strong]:font-normal [&_[data-money]]:ml-1.5 [&_[data-money]]:font-semibold [&_[data-money]]:text-foreground">
                   <span>
                     <i /> Gastos registrados
                   </span>
@@ -135,7 +146,7 @@ export default function DashboardPage() {
                 <CategoriesChart data={data} />
               </Section>
             </div>
-            <div className="dashboard-bottom">
+            <div className="grid grid-cols-1 items-start gap-5.5 lg:grid-cols-[1.35fr_1fr] xl:grid-cols-[1.6fr_1fr]">
               <Section
                 title="Últimos gastos"
                 description="Los movimientos más recientes del período"
@@ -152,27 +163,27 @@ export default function DashboardPage() {
                 )}
               </Section>
               <Section
-                className="recurring-card"
+                className="border-t-3 border-t-primary [&_[data-slot=card-header]>svg]:text-primary [&>[data-slot=card-content]>p]:mt-1.25 [&>[data-slot=card-content]>p]:text-caption"
                 title="Tu vida en suscripciones"
                 description={`${data.activeSubscriptions} activas · costes equivalentes`}
                 action={<Repeat2 size={21} />}
               >
-                <div className="recurring-total">
+                <div className="flex items-baseline gap-1.75 font-heading text-title tracking-tight [&>span:last-child]:font-sans [&>span:last-child]:text-2xs [&>span:last-child]:tracking-normal [&>span:last-child]:text-muted-foreground">
                   <Money value={data.monthlyCents} />
                   <span>/ mes equivalente</span>
                 </div>
-                <p className="muted">
+                <p className="text-muted-foreground">
                   <Money value={data.annualCents} /> al año equivalente
                 </p>
-                <div className="recurring-divider" />
+                <div className="mt-5.5 mb-4.75 h-px bg-border" />
                 {settings.data?.showProjections !== false && (
                   <>
-                    <div className="upcoming-heading">
+                    <div className="flex items-center gap-1.5 [&>h3]:text-caption [&>h3]:font-book">
                       <h3>Pagos previstos en el período</h3>
                       <Hint text="Compromisos pendientes, no gastos registrados. Puedes confirmar el cobro desde Suscripciones." />
                     </div>
                     {data.upcoming.length ? (
-                      <ul className="upcoming-list">
+                      <ul className="mt-1.5 mb-5 list-none p-0 [&>li]:flex [&>li]:items-center [&>li]:justify-between [&>li]:border-b [&>li]:border-border [&>li]:py-3 [&>li]:text-xs/normal [&_strong]:text-caption [&_strong]:font-book [&_small]:mt-1.25 [&_small]:block [&_small]:text-2xs [&_small]:text-muted-foreground">
                         {data.upcoming.slice(0, 3).map((p) => (
                           <li key={`${p.subscriptionId}-${p.date}`}>
                             <div>
@@ -186,7 +197,9 @@ export default function DashboardPage() {
                         ))}
                       </ul>
                     ) : (
-                      <p className="quiet-empty">No hay cobros previstos en estas fechas.</p>
+                      <p className="pt-4 pb-5.75 text-caption leading-loose text-muted-foreground">
+                        No hay cobros previstos en estas fechas.
+                      </p>
                     )}
                   </>
                 )}
@@ -199,7 +212,7 @@ export default function DashboardPage() {
               </Section>
             </div>
             {settings.data?.showIncome !== false && data.incomeCount > 0 && (
-              <div className="income-strip">
+              <div className="flex flex-wrap items-center gap-3.5 rounded-lg border border-border bg-card px-5.75 py-4.25 text-xs/normal md:flex-nowrap [&>svg]:text-primary [&>strong]:ml-auto [&>a]:ml-auto md:[&>a]:ml-0">
                 <ArrowDownLeft size={20} />
                 <span>Ingresos registrados en este período</span>
                 <strong>
@@ -208,7 +221,7 @@ export default function DashboardPage() {
                 <TextLink to="/income">Ver ingresos</TextLink>
               </div>
             )}
-            <p className="page-footnote">
+            <p className="flex items-center gap-1.5 text-micro leading-copy text-muted-foreground md:text-2xs">
               Tus cifras reflejan los registros guardados. Los pagos previstos se muestran por
               separado.
             </p>
@@ -230,8 +243,8 @@ function Metric({
   note: string;
 }) {
   return (
-    <section className="metric">
-      <div className="metric-heading">
+    <section className="min-w-0 rounded-lg border border-border bg-card p-4.5 md:p-3.5 lg:p-4.25 xl:px-5.25 xl:py-5 2xl:p-6 [&>strong]:mt-2.25 [&>strong]:block [&>strong]:font-heading [&>strong]:text-2xl/normal [&>strong]:font-medium [&>strong]:tracking-tight [&>strong]:wrap-anywhere md:[&>strong]:text-lg lg:[&>strong]:text-title-small xl:[&>strong]:text-metric [&>small]:mt-0.75 [&>small]:block [&>small]:text-2xs [&>small]:text-muted-foreground md:[&>small]:text-micro lg:[&>small]:text-2xs">
+      <div className="flex items-center justify-between gap-2.5 text-caption text-muted-foreground md:text-2xs lg:text-caption [&>svg]:size-3.75 [&>svg]:text-muted-foreground md:[&>svg]:hidden lg:[&>svg]:block">
         <span>{label}</span>
         {icon}
       </div>

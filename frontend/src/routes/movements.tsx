@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Search, SlidersHorizontal, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import type { Movement, Page } from '@moneta/shared';
 import { useApi, useCategories } from '@/services/api';
-import { EmptyState, ErrorState, Loading, Money, Section } from '@/components/common';
+import { PageHeader, EmptyState, ErrorState, Loading, Money, Section } from '@/components/common';
 import { MovementDialog } from '@/features/movements/movement-dialog';
 import { MovementTable } from '@/features/movements/movement-table';
 import { Input } from '@/components/ui/input';
@@ -28,30 +28,33 @@ export default function MovementsPage({ kind }: { kind: 'expenses' | 'income' })
   const categories = useCategories();
   const income = kind === 'income';
   return (
-    <div className="page-stack">
-      <div className="page-intro">
-        <div>
-          <p className="eyebrow">{income ? 'LO QUE RECIBES' : 'CADA MOVIMIENTO CUENTA'}</p>
-          <h1>{income ? 'Tus ingresos' : 'Tus gastos'}</h1>
-          <p>
-            {income
-              ? 'Regístralos cuando quieras para conocer tu balance.'
-              : 'Un lugar para entender a dónde va tu dinero.'}
-          </p>
-        </div>
+    <div className="flex flex-col gap-5 md:gap-6.25 2xl:gap-7.25">
+      <PageHeader
+        eyebrow={income ? 'LO QUE RECIBES' : 'CADA MOVIMIENTO CUENTA'}
+        title={income ? 'Tus ingresos' : 'Tus gastos'}
+        description={
+          income
+            ? 'Regístralos cuando quieras para conocer tu balance.'
+            : 'Un lugar para entender a dónde va tu dinero.'
+        }
+      >
         <MovementDialog kind={kind} />
-      </div>
-      <div className="ledger-summary">
-        <div className="summary-icon">{income ? <ArrowDownLeft /> : <ArrowUpRight />}</div>
+      </PageHeader>
+      <div className="flex flex-wrap items-center gap-4.25 rounded-lg border border-border bg-card p-4.75 md:flex-nowrap md:px-6.5 md:py-5.75 [&>div>span]:text-xs/normal [&>div>span]:text-muted-foreground [&_strong]:mt-1 [&_strong]:block [&_strong]:font-heading [&_strong]:text-3xl/normal [&_strong]:font-book [&>span]:ml-15.75 [&>span]:w-full [&>span]:text-caption md:[&>span]:ml-auto md:[&>span]:w-auto md:[&>span]:text-xs/normal">
+        <div className="grid size-11.5 place-items-center rounded-lg bg-accent text-primary">
+          {income ? <ArrowDownLeft /> : <ArrowUpRight />}
+        </div>
         <div>
           <span>Total de {income ? 'ingresos' : 'gastos'} filtrados</span>
           <strong>{data.data ? <Money value={data.data.totalCents} /> : '—'}</strong>
         </div>
-        <span className="muted">{data.data?.total ?? '—'} movimientos registrados</span>
+        <span className="text-muted-foreground">
+          {data.data?.total ?? '—'} movimientos registrados
+        </span>
       </div>
       <Section title="Historial de movimientos" description="Solo movimientos reales registrados.">
-        <div className="table-filters">
-          <div className="search-field">
+        <div className="@container/filters mb-5 flex flex-wrap items-center gap-2.25 md:gap-3 [&>input]:max-w-85 [&_select]:text-xs/normal">
+          <div className="relative min-w-50 flex-1 [&>svg]:absolute [&>svg]:top-2.75 [&>svg]:left-3 [&>svg]:text-muted-foreground [&>input]:pl-9.25">
             <Search size={17} />
             <Input
               aria-label="Buscar movimientos"
@@ -61,6 +64,7 @@ export default function MovementsPage({ kind }: { kind: 'expenses' | 'income' })
             />
           </div>
           <select
+            className="min-h-9.5 max-w-full cursor-pointer rounded-sm border border-input bg-card py-2 pr-8 pl-3 text-inherit"
             aria-label="Filtrar por categoría"
             value={filters.categoryId}
             onChange={(e) => change({ categoryId: e.target.value })}
@@ -72,11 +76,11 @@ export default function MovementsPage({ kind }: { kind: 'expenses' | 'income' })
               </option>
             ))}
           </select>
-          <details className="filter-details">
-            <summary>
+          <details className="relative">
+            <summary className="cursor-pointer text-xs/normal text-muted-foreground">
               <SlidersHorizontal size={15} /> Más filtros
             </summary>
-            <div className="filter-panel">
+            <div className="absolute top-11.25 right-0 z-15 grid min-w-70 gap-3.25 rounded-lg border border-border bg-popover p-5 shadow-floating [&>label]:flex [&>label]:flex-col [&>label]:gap-1.5 [&>label]:text-xs/normal">
               <label>
                 Desde
                 <Input
@@ -96,7 +100,11 @@ export default function MovementsPage({ kind }: { kind: 'expenses' | 'income' })
               </label>
               <label>
                 Ordenar por
-                <select value={filters.sort} onChange={(e) => change({ sort: e.target.value })}>
+                <select
+                  className="min-h-9.5 max-w-full cursor-pointer rounded-sm border border-input bg-card py-2 pr-8 pl-3 text-inherit"
+                  value={filters.sort}
+                  onChange={(e) => change({ sort: e.target.value })}
+                >
                   <option value="date">Fecha</option>
                   <option value="amount">Importe</option>
                 </select>
@@ -104,6 +112,7 @@ export default function MovementsPage({ kind }: { kind: 'expenses' | 'income' })
               <label>
                 Dirección
                 <select
+                  className="min-h-9.5 max-w-full cursor-pointer rounded-sm border border-input bg-card py-2 pr-8 pl-3 text-inherit"
                   value={filters.direction}
                   onChange={(e) => change({ direction: e.target.value })}
                 >
@@ -153,7 +162,7 @@ export default function MovementsPage({ kind }: { kind: 'expenses' | 'income' })
         ) : (
           <>
             <MovementTable items={data.data.items} categories={categories.data ?? []} kind={kind} />
-            <div className="pagination">
+            <div className="mt-2.5 flex items-center justify-between border-t border-border pt-5 text-caption text-muted-foreground [&>div]:flex [&>div]:gap-2">
               <span>
                 Página {filters.page} de {Math.max(1, Math.ceil(data.data.total / 20))}
               </span>
