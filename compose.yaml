@@ -1,0 +1,55 @@
+name: ${COMPOSE_PROJECT_NAME:-moneta}
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-moneta}
+      POSTGRES_USER: ${POSTGRES_USER:-moneta}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Configura POSTGRES_PASSWORD en .env}
+      TZ: Europe/Madrid
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    restart: unless-stopped
+    networks: [private]
+  migrate:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-moneta}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-moneta}
+    command: [node, dist/db/migrate.js]
+    depends_on:
+      db: { condition: service_healthy }
+    networks: [private]
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-moneta}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-moneta}
+      PORT: 3080
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://${BIND_ADDRESS:-127.0.0.1}:${FRONTEND_PORT:-5180},http://localhost:${FRONTEND_PORT:-5180},http://127.0.0.1:${FRONTEND_PORT:-5180}}
+      TZ: Europe/Madrid
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    restart: unless-stopped
+    networks: [private]
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports:
+      - '${BIND_ADDRESS:-127.0.0.1}:${FRONTEND_PORT:-5180}:80'
+    depends_on:
+      backend: { condition: service_healthy }
+    restart: unless-stopped
+    networks: [private]
+volumes:
+  postgres_data:
+networks:
+  private:

@@ -1,0 +1,33 @@
+{
+  "name": "moneta",
+  "private": true,
+  "packageManager": "pnpm@11.17.0",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @moneta/shared build && pnpm --parallel --filter @moneta/shared --filter @moneta/backend --filter @moneta/frontend dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm test:setup && pnpm test:publication && pnpm -r test",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:generate": "pnpm --filter @moneta/backend db:generate",
+    "db:migrate": "pnpm --filter @moneta/backend db:migrate",
+    "agents:sync": "node scripts/sync-agents.mjs",
+    "docker:up": "docker compose up -d --build",
+    "setup": "node scripts/setup.mjs",
+    "test:setup": "node --test scripts/setup.test.mjs",
+    "publication:check": "node scripts/check-publication.mjs",
+    "test:publication": "node --test scripts/check-publication.test.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "eslint": "^9.39.1",
+    "typescript-eslint": "^8.48.0",
+    "prettier": "^3.6.2",
+    "typescript": "~5.9.3",
+    "vitest": "^4.0.15"
+  }
+}
