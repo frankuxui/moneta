@@ -39,3 +39,13 @@ Las capturas de trabajo se guardaron en `.local/`, excluido del repositorio.
 ## Límites de lo verificado
 
 No se ha desplegado en el servidor Ubuntu 192.168.1.10, ni se ha modificado su firewall, ni se ha ejecutado la CI en GitHub. El stack se ejecutó localmente en contenedores Linux. Las instrucciones de backup/restauración están documentadas; todavía no se ha ensayado una restauración de datos del usuario. No se ha realizado una auditoría WCAG formal ni una prueba de carga. Los adaptadores de agentes se validaron como archivos; no se ejecutaron sesiones independientes de Codex CLI y Claude Code para verificar su descubrimiento nativo.
+
+## Preparación para el repositorio público
+
+En una segunda comprobación se añadieron el asistente de configuración, las guías de arranque y entorno, exclusiones de datos y la revisión del índice Git. El total ejecutado pasó a **48 pruebas**: las 42 anteriores, 3 para creación segura de configuración y 3 para el control de publicación. También se ejecutaron ESLint, TypeScript y Prettier tras esos cambios.
+
+Se clonó el código versionado a una carpeta nueva sin `.env`, `node_modules`, archivos compilados ni volúmenes de la instalación original. Se ejecutó el comando Docker de `docs/startup.md` para crear las credenciales; después se eligió el puerto 5181 para coexistir con la app original en 5180.
+
+La copia construyó sus imágenes con el lockfile, creó una red y un volumen exclusivos, aplicó las migraciones y dejó db/backend/frontend healthy y migrate Exited (0). La API comenzó sin movimientos y con diez categorías. Se registró un gasto temporal desde el origen 5181, se comprobó que la instalación original seguía vacía y se verificó la persistencia tras reiniciar PostgreSQL. Después se eliminó el gasto temporal.
+
+La revisión previa a la publicación comprobó los 139 archivos del índice: `.env` local, credenciales, volcados, backups, capturas y archivos generados quedaron fuera. Las únicas inserciones de las migraciones son las categorías y la configuración inicial. Los contenedores y el volumen de la copia de comprobación son recursos desechables distintos de la instalación personal. El estado posterior de la CI publicada se puede consultar en GitHub Actions; el apartado anterior describe los límites de la verificación inicial.
