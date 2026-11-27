@@ -99,6 +99,12 @@ Los tests vacían exclusivamente una BD cuyo nombre termina en `_test`. La base 
 
 ## Uso y reglas financieras
 
+### Ahorros e inversión
+
+Desde el menú puedes abrir **Ahorros** para registrar lo que apartas cada mes en una cuenta o monedero, e **Inversión** para contabilizar aportaciones y retiradas por plataforma o servicio. Incluyen saldos acumulados, resumen del mes, edición, borrado confirmado e historial con filtros y paginación. No generan gastos ni ingresos ni ejecutan transferencias. El capital invertido es el neto aportado, sin valoración de mercado ni rentabilidad. Consulta [la guía de ahorros e inversión](docs/wealth.md).
+
+### Gastos, ingresos y suscripciones
+
 - Añade gastos e ingresos desde sus secciones. Acepta `23,65`, `23.65` y `1.250,75`. `1.250` se rechaza por ambigüedad: escribe `1250` o `1.250,00`.
 - Los historiales y suscripciones usan TanStack Table con buscador global y un input por columna de datos. Puedes combinar búsquedas de nombre, categoría/proveedor, fechas e importes; el global también encuentra notas y otros campos del registro, sin distinguir acentos o mayúsculas. El historial permite editar, eliminar, filtrar por fecha/categoría y ordenar por fecha/importe. La búsqueda y el total incluyen todos los resultados, no solo la página visible.
 - Crea suscripciones con importe por cobro y frecuencia. Las equivalencias mensual/anual son presupuestarias; semanal usa 52 cobros/año. Los redondeos se hacen al céntimo, con enteros.

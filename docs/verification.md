@@ -1,5 +1,16 @@
 # Verificación de la entrega
 
+## Ampliación: ahorros e inversión (27 de noviembre de 2026)
+
+- `pnpm test` con PostgreSQL aislado en `moneta_test`: 67 pruebas aprobadas (6 de scripts, 33 shared, 20 API/PostgreSQL y 8 frontend). Incluyen céntimos, totales superiores al entero seguro, meses y años distintos, bisiestos, validación, filtros combinados antes de paginar, PATCH parcial, separación de gastos/ingresos, rollback de ediciones y borrados, y retiradas concurrentes sin sobregiro por destino.
+- `pnpm typecheck`, `pnpm lint`, `pnpm build` y `pnpm format:check`: aprobados.
+- Recorrido de navegador con API y base de pruebas: crear y editar una aportación de ahorro; crear una aportación y una retirada de inversión; verificar saldos por plataforma, céntimos y resumen del mes; búsquedas sin resultados y selector mensual; temas claro/oscuro. A 375 × 812 no se observó desbordamiento horizontal del documento; la tabla dispone de scroll propio.
+- Copia privada previa a la actualización mediante pg_dump; listado del archivo comprobado con pg_restore --list. Esta comprobación no equivale a ensayar una restauración.
+- `docker compose config --quiet` y `docker compose up -d --build --wait`: migración aditiva aplicada en la instalación existente, frontend/backend/db saludables y migrate finalizado con código 0. Se conserva el puerto local configurado 5280, credenciales e identidad del volumen.
+- Verificadas las rutas `/savings` y `/investments` en la instalación compilada con Nginx, sus resúmenes API y `/api/v1/health`. Los registros temporales del recorrido se crearon exclusivamente en la base aislada; no se añadieron movimientos ficticios a la base personal.
+
+Los apartados siguientes conservan la evidencia histórica de la entrega inicial.
+
 Ejecutada el 22 de noviembre de 2026 en Windows con Node 24.18.0, pnpm 11.17.0, Docker Desktop (motor Linux) y Edge headless mediante Playwright CLI. Las imágenes usan Node 24 Alpine, Nginx 1.28 Alpine y PostgreSQL 17 Alpine.
 
 ## Comprobaciones automatizadas

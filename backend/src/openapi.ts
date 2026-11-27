@@ -12,6 +12,9 @@ import {
   subscriptionOutput,
   categoryOutput,
   platformOutput,
+  wealthInput,
+  wealthOutput,
+  wealthSummaryOutput,
 } from '@moneta/shared';
 const schema = (value: z.ZodType, io: 'input' | 'output' = 'input') =>
   z.toJSONSchema(value, { target: 'openapi-3.0', io });
@@ -28,28 +31,55 @@ for (const [path, name, paginated] of [
   ['subscriptions', 'Subscription', false],
   ['categories', 'Category', false],
   ['platforms', 'Platform', false],
+  ['savings', 'WealthEntry', true],
+  ['investments', 'WealthEntry', true],
 ] as const) {
   paths[`/api/v1/${path}`] = {
     get: {
       summary: `Listar ${path}`,
       parameters: paginated
         ? [
-            ...[
-              'search',
-              'nameSearch',
-              'categorySearch',
-              'dateSearch',
-              'amountSearch',
-              'from',
-              'to',
-              'categoryId',
-            ].map((name) => ({
+            ...(name === 'WealthEntry'
+              ? [
+                  'search',
+                  'nameSearch',
+                  'destinationSearch',
+                  'directionSearch',
+                  'dateSearch',
+                  'amountSearch',
+                  'notesSearch',
+                  'from',
+                  'to',
+                ]
+              : [
+                  'search',
+                  'nameSearch',
+                  'categorySearch',
+                  'dateSearch',
+                  'amountSearch',
+                  'from',
+                  'to',
+                  'categoryId',
+                ]
+            ).map((name) => ({
               name,
               in: 'query',
               schema: { type: 'string' },
             })),
-            { name: 'sort', in: 'query', schema: { type: 'string', enum: ['date', 'amount'] } },
-            { name: 'direction', in: 'query', schema: { type: 'string', enum: ['asc', 'desc'] } },
+            ...(name === 'WealthEntry'
+              ? []
+              : [
+                  {
+                    name: 'sort',
+                    in: 'query',
+                    schema: { type: 'string', enum: ['date', 'amount'] },
+                  },
+                  {
+                    name: 'direction',
+                    in: 'query',
+                    schema: { type: 'string', enum: ['asc', 'desc'] },
+                  },
+                ]),
             { name: 'page', in: 'query', schema: { type: 'integer', minimum: 1, default: 1 } },
             {
               name: 'pageSize',
@@ -131,6 +161,20 @@ paths['/api/v1/settings'] = {
     responses: { 200: { description: 'Guardadas', content: json(ref('Settings')) }, 422: error },
   },
 };
+for (const kind of ['savings', 'investments']) {
+  paths[`/api/v1/${kind}/summary`] = {
+    get: {
+      summary:
+        'Saldo total, aportaciones y retiradas del mes actual y saldos por destino. No es valoración de mercado.',
+      responses: {
+        200: {
+          description: 'Resumen independiente de filtros y paginación',
+          content: json(ref('WealthSummary')),
+        },
+      },
+    },
+  };
+}
 for (const name of ['dashboard', 'analytics'])
   paths[`/api/v1/${name}`] = {
     get: {
@@ -173,12 +217,14 @@ for (const [name, input, output] of [
   ['Subscription', subscriptionInput, subscriptionOutput],
   ['Category', categoryInput, categoryOutput],
   ['Platform', platformInput, platformOutput],
+  ['WealthEntry', wealthInput, wealthOutput],
 ] as const) {
   schemas[`${name}Input`] = schema(input);
   schemas[`${name}Patch`] = schema(createPatchSchema(input));
   schemas[name] = schema(output, 'output');
 }
 schemas.SubscriptionSummary = schema(subscriptionSummaryOutput, 'output');
+schemas.WealthSummary = schema(wealthSummaryOutput, 'output');
 schemas.Overview = {
   type: 'object',
   properties: Object.fromEntries([

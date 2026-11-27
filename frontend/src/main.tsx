@@ -11,6 +11,7 @@ const Movements = lazy(() => import('@/routes/movements'));
 const Subscriptions = lazy(() => import('@/routes/subscriptions'));
 const Analytics = lazy(() => import('@/routes/analytics'));
 const Settings = lazy(() => import('@/routes/settings'));
+const Wealth = lazy(() => import('@/routes/wealth'));
 const client = new QueryClient({
   defaultOptions: {
     queries: { staleTime: 30000, retry: 1, refetchOnWindowFocus: true },
@@ -35,6 +36,11 @@ createRoot(document.getElementById('root')!).render(
               <Route path="/income" element={<Movements key="income" kind="income" />} />
               <Route path="/subscriptions" element={<Subscriptions />} />
               <Route path="/analytics" element={<Analytics />} />
+              <Route path="/savings" element={<Wealth key="savings" kind="savings" />} />
+              <Route
+                path="/investments"
+                element={<Wealth key="investments" kind="investments" />}
+              />
               <Route path="/categories" element={<Settings categoriesOnly />} />
               <Route path="/settings" element={<Settings />} />
               <Route

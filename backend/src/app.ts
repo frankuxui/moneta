@@ -11,6 +11,7 @@ import { categoryRouter, platformRouter, settingsRouter } from './modules/catalo
 import { overview } from './modules/analytics/service.js';
 import { AppError } from './lib/errors.js';
 import { openapi } from './openapi.js';
+import { wealthRouter } from './modules/wealth/routes.js';
 
 export const app = express();
 app.disable('x-powered-by');
@@ -64,6 +65,8 @@ app.use('/api/v1/subscriptions', subscriptionRouter);
 app.use('/api/v1/categories', categoryRouter);
 app.use('/api/v1/platforms', platformRouter);
 app.use('/api/v1/settings', settingsRouter);
+app.use('/api/v1/savings', wealthRouter('savings'));
+app.use('/api/v1/investments', wealthRouter('investments'));
 app.get(['/api/v1/dashboard', '/api/v1/analytics'], async (req, res) => {
   const { from, to } = rangeQuery.parse(req.query);
   res.json(await overview(from, to));

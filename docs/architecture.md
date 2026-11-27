@@ -10,6 +10,8 @@ pnpm Workspaces, sin orquestador adicional. `frontend` (React, Vite), `backend` 
 
 ## Modelo y relaciones
 
+- Ahorros e inversión: tabla independiente `wealth_entries`, discriminada por savings/investments; concepto, destino libre, dirección aportación/retirada, importe, fecha y notas. No enlaza ni altera movimientos de gasto/ingreso. Ver [contrato y guía](wealth.md).
+
 - Categorías y plataformas: UUID, nombre único; las categorías incluyen color.
 - Movimientos: tipo gasto/ingreso, nombre, concepto, importe positivo, fecha, categoría, descripción, método de pago y notas.
 - Suscripciones: proveedor, categoría, nombre, concepto, importe, frecuencia, inicio, próximo cobro, día ancla, estado, URL y notas.
@@ -24,6 +26,8 @@ PostgreSQL BIGINT, API cadenas de céntimos, cálculos BigInt. Máximo por movim
 Fechas DATE ISO (sin hora); hoy se determina en Europe/Madrid. Rangos inclusivos; lunes inicia la semana. Recurrencias mensuales mantienen el día ancla original y limitan al último día del mes. Confirmación explícita del próximo vencimiento bajo bloqueo de fila en una transacción; guarda gasto y adelanta vencimiento atómicamente. Reintentos de la misma fecha devuelven el movimiento existente. No se genera ningún gasto automáticamente. Un movimiento confirmado se corrige editándolo; eliminarlo no rebobina el calendario.
 
 ## API `/api/v1`
+
+CRUD adicional `/savings` y `/investments`, con GET `/summary` para saldo, aportaciones/retiradas del mes actual y saldos por destino. Las mutaciones se serializan con bloqueo asesor transaccional por apartado y rechazan saldos finales negativos por destino. Filtros y netos se calculan en servidor antes de paginar; las cifras monetarias son cadenas. Son asignaciones registradas manualmente, sin transferencias ni valoración de mercado.
 
 CRUD `/expenses`, `/income`, `/subscriptions`, `/categories`, `/platforms`; PATCH como actualización parcial. GET de movimientos acepta `search`, `nameSearch`, `categorySearch`, `dateSearch`, `amountSearch`, `from`, `to`, `categoryId`, `sort` (date/amount), `direction`, `page`, `pageSize` (máximo 100). Devuelve `{items,total,totalCents,page,pageSize}`. `/dashboard?from&to` y `/analytics?from&to` devuelven cifras reales, comparación anterior, evolución y previsiones separadas. `/subscriptions/:id/confirm` recibe `{date}`. GET/PUT `/settings`. GET `/health`; contrato generado desde Zod en `/openapi.json`, explorador en `/docs`. Errores `{error,message,details?}`. Validación estricta, límites de cuerpo, consultas parametrizadas, same-origin y control de origen para mutaciones.
 

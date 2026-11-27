@@ -16,6 +16,8 @@ import {
   X,
   ShieldCheck,
   ChevronRight,
+  PiggyBank,
+  TrendingUp,
 } from 'lucide-react';
 import { todayMadrid } from '@moneta/shared';
 import { api } from '@/services/api';
@@ -26,6 +28,8 @@ const links = [
   { to: '/expenses', label: 'Gastos', icon: ArrowUpRight },
   { to: '/income', label: 'Ingresos', icon: ArrowDownLeft },
   { to: '/subscriptions', label: 'Suscripciones', icon: Repeat2 },
+  { to: '/savings', label: 'Ahorros', icon: PiggyBank },
+  { to: '/investments', label: 'Inversión', icon: TrendingUp },
   { to: '/analytics', label: 'Analíticas', icon: ChartNoAxesCombined },
   { to: '/categories', label: 'Categorías', icon: Shapes },
 ];

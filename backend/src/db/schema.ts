@@ -22,6 +22,27 @@ export const categories = pgTable('categories', {
   color: text('color').notNull().default('#287f83'),
 });
 export const platforms = pgTable('platforms', { id: id(), name: text('name').notNull().unique() });
+export const wealthEntries = pgTable(
+  'wealth_entries',
+  {
+    id: id(),
+    kind: text('kind').$type<'savings' | 'investments'>().notNull(),
+    name: text('name').notNull(),
+    destination: text('destination').notNull(),
+    direction: text('direction').$type<'deposit' | 'withdrawal'>().notNull(),
+    amountCents: bigint('amount_cents', { mode: 'bigint' }).notNull(),
+    date: date('date').notNull(),
+    notes: text('notes').notNull().default(''),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    check('wealth_kind', sql`${t.kind} IN ('savings','investments')`),
+    check('wealth_direction', sql`${t.direction} IN ('deposit','withdrawal')`),
+    check('wealth_amount', sql`${t.amountCents}>0 AND ${t.amountCents}<=999999999999`),
+    check('wealth_destination', sql`length(trim(${t.destination})) BETWEEN 1 AND 120`),
+    index('wealth_kind_date_idx').on(t.kind, t.date),
+  ],
+);
 export const subscriptions = pgTable(
   'subscriptions',
   {
